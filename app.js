@@ -10,10 +10,12 @@ const containerAlert = document.querySelector('#container-alert');
 const closeAlert = document.querySelector('#close-alert');
 const alertMessage = document.querySelector('#alert-message');
 
-let dummyTransactions = []
+const localStorageTransaction = JSON.parse(localStorage.getItem('transactions'));
+let transactions = localStorage.getItem('transactions') !== null ? localStorageTransaction : [];
 
 const removeTransaction = ID => {
-    dummyTransactions = dummyTransactions.filter((transaction) => transaction.id !== ID)
+    transactions = transactions.filter((transaction) => transaction.id !== ID)
+    updateLocalStorage();
     init()
 }
 
@@ -31,11 +33,10 @@ const addTransactionIntoDOM = transaction => {
     `
 
     transactionUl.append(li)
-
 }
 
 const updateBalanceValues = () => {
-    const transactionsAmount = dummyTransactions.map(transaction => transaction.amount);
+    const transactionsAmount = transactions.map(transaction => transaction.amount);
     const total = transactionsAmount.reduce((acc, transaction) => acc + transaction, 0).toFixed(2);
     const income = transactionsAmount.filter(amountValue => amountValue > 0)
         .reduce((acc, amountValue) => acc + amountValue, 0)
@@ -51,7 +52,7 @@ const updateBalanceValues = () => {
 
 const init = () => {
     transactionUl.innerHTML = '';
-    dummyTransactions.forEach(addTransactionIntoDOM);
+    transactions.forEach(addTransactionIntoDOM);
     updateBalanceValues();
 }
 
@@ -71,6 +72,10 @@ const toggleClosed = (event) => {
     }
 }
 
+function updateLocalStorage() {
+    localStorage.setItem('transactions', JSON.stringify(transactions))
+}
+
 const generateID = () => Math.floor(Math.random() * 100);
 
 form.addEventListener('submit', event => {
@@ -84,16 +89,15 @@ form.addEventListener('submit', event => {
         return;
     }
 
-    console.log(transactionAmount)
-
     const transaction = {
         id: generateID(),
         name: transactionName,
         amount: Number(transactionAmount)
     };
 
-    dummyTransactions.push(transaction);
+    transactions.push(transaction);
     init();
+    updateLocalStorage();
 
     inputTransactionName.value = '';
     inputTransactionAmount.value = '';
